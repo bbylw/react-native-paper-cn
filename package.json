@@ -1,0 +1,21 @@
+{
+  "name": "react-native-paper-cn",
+  "version": "1.0.0",
+  "description": "React Native Paper 中文文档网站",
+  "type": "module",
+  "scripts": {
+    "dev": "bun --hot server.ts",
+    "start": "bun server.ts",
+    "build": "bun build src/entry.tsx --outdir ./dist --minify"
+  },
+  "dependencies": {
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
+    "react-router-dom": "^7.18.2"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.4",
+    "typescript": "^7.0.2"
+  }
+}

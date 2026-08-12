@@ -1,0 +1,313 @@
+/* ============================================
+   React Native Paper 中文文档 - 全局样式
+   ============================================ */
+
+/* CSS 变量定义 */
+:root {
+  /* 品牌色 */
+  --rnp-primary: #6200ee;
+  --rnp-primary-dark: #4a00b3;
+  --rnp-primary-light: #9c4dcc;
+  --rnp-accent: #03dac6;
+  --rnp-accent-dark: #018786;
+  --rnp-error: #b00020;
+  --rnp-warning: #ff9800;
+  --rnp-success: #00c853;
+  --rnp-info: #2196f3;
+
+  /* 深色主题下的语义颜色 */
+  --rnp-primary-dark-theme: #bb86fc;
+  --rnp-accent-dark-theme: #03dac6;
+
+  /* 浅色主题 - 表面和背景 */
+  --bg-base: #ffffff;
+  --bg-elevated: #ffffff;
+  --bg-surface: #f6f6f6;
+  --bg-surface-variant: #e7e0e9;
+  --bg-hover: #f0f0f0;
+  --bg-code: #f5f5f5;
+  --bg-overlay: rgba(255, 255, 255, 0.8);
+
+  /* 浅色主题 - 文字 */
+  --text-primary: #1d1b20;
+  --text-secondary: #49454f;
+  --text-tertiary: #747677;
+  --text-disabled: #9c9c9c;
+  --text-on-primary: #ffffff;
+  --text-on-accent: #000000;
+
+  /* 浅色主题 - 边框 */
+  --border-color: #e0e0e0;
+  --border-color-strong: #bdbdbd;
+  --border-color-soft: #f0f0f0;
+
+  /* 浅色主题 - 阴影 */
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
+  --shadow-md: 0 3px 8px rgba(0, 0, 0, 0.12);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.15);
+  --shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.18);
+
+  /* 间距 */
+  --nav-height: 64px;
+  --max-width: 1280px;
+
+  /* 过渡 */
+  --transition-fast: 0.15s ease;
+  --transition-base: 0.25s ease;
+  --transition-slow: 0.4s ease;
+
+  /* 圆角 */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius-full: 9999px;
+
+  /* 字体 */
+  --font-sans: "Inter", "Noto Sans SC", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-mono: "JetBrains Mono", "Fira Code", "Consolas", monospace;
+}
+
+/* 深色主题 */
+html.dark {
+  --bg-base: #121212;
+  --bg-elevated: #1e1e1e;
+  --bg-surface: #1e1e1e;
+  --bg-surface-variant: #2d2d2d;
+  --bg-hover: #2a2a2a;
+  --bg-code: #1a1a1a;
+  --bg-overlay: rgba(18, 18, 18, 0.85);
+
+  --text-primary: #e6e1e5;
+  --text-secondary: #c4c0c9;
+  --text-tertiary: #9c9c9c;
+  --text-disabled: #6c6c6c;
+  --text-on-primary: #000000;
+  --text-on-accent: #000000;
+
+  --border-color: #2d2d2d;
+  --border-color-strong: #444444;
+  --border-color-soft: #1e1e1e;
+
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 3px 8px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.5);
+  --shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.6);
+
+  --rnp-primary: #bb86fc;
+  --rnp-primary-dark: #6200ee;
+}
+
+/* 全局重置 */
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--bg-base);
+  color: var(--text-primary);
+  line-height: 1.6;
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  transition: background-color var(--transition-base), color var(--transition-base);
+  overflow-x: hidden;
+}
+
+a {
+  color: var(--rnp-primary);
+  text-decoration: none;
+  transition: color var(--transition-fast);
+}
+
+a:hover {
+  color: var(--rnp-primary-dark);
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+  border: none;
+  background: none;
+}
+
+ul, ol {
+  list-style: none;
+}
+
+code, pre {
+  font-family: var(--font-mono);
+}
+
+/* 通用容器 */
+.container {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+/* 滚动条样式 */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-surface);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-color-strong);
+  border-radius: var(--radius-full);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-tertiary);
+}
+
+/* 选中文本样式 */
+::selection {
+  background: var(--rnp-primary);
+  color: var(--text-on-primary);
+}
+
+/* 渐入动画 */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.fade-in-up {
+  animation: fadeInUp 0.6s ease forwards;
+}
+
+.fade-in {
+  animation: fadeIn 0.6s ease forwards;
+}
+
+/* 链接按钮通用样式 */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 24px;
+  border-radius: var(--radius-full);
+  font-weight: 600;
+  font-size: 15px;
+  transition: all var(--transition-base);
+  white-space: nowrap;
+}
+
+.btn-primary {
+  background: var(--rnp-primary);
+  color: var(--text-on-primary);
+}
+
+.btn-primary:hover {
+  background: var(--rnp-primary-dark);
+  color: var(--text-on-primary);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.btn-outline {
+  border: 2px solid var(--border-color-strong);
+  color: var(--text-primary);
+}
+
+.btn-outline:hover {
+  border-color: var(--rnp-primary);
+  color: var(--rnp-primary);
+  transform: translateY(-2px);
+}
+
+/* Material Design 卡片样式 */
+.mdc-card {
+  background: var(--bg-elevated);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  transition: box-shadow var(--transition-base), transform var(--transition-base);
+}
+
+.mdc-card:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+/* 响应式工具类 */
+@media (max-width: 768px) {
+  .container {
+    padding: 0 16px;
+  }
+}
+
+/* 焦点可见样式 */
+*:focus-visible {
+  outline: 2px solid var(--rnp-primary);
+  outline-offset: 2px;
+}
+
+/* 无障碍 */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
