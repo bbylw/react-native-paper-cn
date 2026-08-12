@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "bun --hot server.ts",
     "start": "bun server.ts",
-    "build": "bun build src/entry.tsx --outdir ./dist --minify"
+    "build": "bun run build.ts",
+    "build:prod": "bun run build.ts"
   },
   "dependencies": {
     "react": "^19.2.8",
