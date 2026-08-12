@@ -1,58 +1,88 @@
 import { watch } from "node:fs";
+import { basename } from "node:path";
 
-const PORT = 3000;
+const isDev = process.env.NODE_ENV !== "production";
+const OUTDIR = "dist";
 
-// 使用 Bun.build 进行打包，解决 bare module imports
+// ============================================
+// 构建函数
+// ============================================
 async function buildApp() {
   const result = await Bun.build({
     entrypoints: ["./src/entry.tsx"],
-    outdir: "./.dist",
+    outdir: OUTDIR,
     target: "browser",
     format: "esm",
     splitting: true,
-    sourcemap: "external",
-    minify: false,
+    sourcemap: isDev ? "external" : "none",
+    minify: !isDev,
+    naming: "[name]-[hash].[ext]",
     define: {
-      "process.env.NODE_ENV": JSON.stringify("development"),
+      "process.env.NODE_ENV": JSON.stringify(
+        process.env.NODE_ENV || "development"
+      ),
     },
   });
 
   if (!result.success) {
     console.error("Build failed:");
-    for (const log of result.logs) {
-      console.error(log);
-    }
-    return false;
+    for (const log of result.logs) console.error(log);
+    return null;
   }
 
-  console.log(`✅ 构建成功 (${result.outputs.length} 个文件)`);
-  return true;
+  // 找到生成的文件名
+  const jsFile = result.outputs.find((o) => o.path.endsWith(".js"));
+  const cssFile = result.outputs.find((o) => o.path.endsWith(".css"));
+  const jsName = jsFile ? basename(jsFile.path) : null;
+  const cssName = cssFile ? basename(cssFile.path) : null;
+
+  // 生成 index.html
+  let html = await Bun.file("./index.html").text();
+  if (jsName) {
+    html = html.replace(
+      '<script type="module" src="/.dist/entry.js"></script>',
+      `<script type="module" src="/${jsName}"></script>`
+    );
+  }
+  if (cssName) {
+    const cssLink = `<link rel="stylesheet" href="/${cssName}" />`;
+    if (!html.includes(cssName)) {
+      html = html.replace("</head>", `  ${cssLink}\n  </head>`);
+    }
+  }
+  await Bun.write(`${OUTDIR}/index.html`, html);
+
+  console.log(
+    `Build: ${jsName}${cssName ? ", " + cssName : ""}, index.html`
+  );
+  return { jsName, cssName };
 }
 
-// 初始构建
-await buildApp();
+// ============================================
+// 开发模式：构建 + 文件监听
+// ============================================
+if (isDev) {
+  await buildApp();
 
-// 监听文件变化并重新构建
-let rebuildTimeout: any = null;
-let isRebuilding = false;
-
-try {
-  watch("./src", { recursive: true }, async () => {
-    if (rebuildTimeout) clearTimeout(rebuildTimeout);
-    rebuildTimeout = setTimeout(async () => {
-      if (isRebuilding) return;
-      isRebuilding = true;
-      console.log("🔄 重新构建...");
-      await buildApp();
-      isRebuilding = false;
-      console.log("✅ 构建完成");
-    }, 300);
-  });
-} catch (e) {
-  console.log("文件监听不可用，请手动重启");
+  let rebuildTimeout: any = null;
+  let isRebuilding = false;
+  try {
+    watch("./src", { recursive: true }, async () => {
+      if (rebuildTimeout) clearTimeout(rebuildTimeout);
+      rebuildTimeout = setTimeout(async () => {
+        if (isRebuilding) return;
+        isRebuilding = true;
+        console.log("Rebuilding...");
+        await buildApp();
+        isRebuilding = false;
+      }, 300);
+    });
+  } catch {}
 }
 
-// 文件扩展名对应的 Content-Type
+// ============================================
+// 内容类型
+// ============================================
 const contentTypes: Record<string, string> = {
   ".html": "text/html; charset=utf-8",
   ".css": "text/css; charset=utf-8",
@@ -71,54 +101,48 @@ const contentTypes: Record<string, string> = {
   ".map": "application/json; charset=utf-8",
 };
 
-// 读取 HTML 并注入 CSS 链接
-async function getIndexHtml(): Promise<string> {
-  let html = await Bun.file("./index.html").text();
-  const cssLink = '<link rel="stylesheet" href="/.dist/entry.css" />';
-  if (!html.includes("entry.css")) {
-    html = html.replace("</head>", `  ${cssLink}\n  </head>`);
-  }
-  return html;
-}
-
-const server = Bun.serve({
-  port: PORT,
+// ============================================
+// Bun.serve() — 同时用于开发和生产
+// Vercel 通过此调用检测服务器并路由请求
+// ============================================
+Bun.serve({
+  // port 在本地运行时生效，Vercel 上自动忽略
+  port: 3000,
   async fetch(req) {
     const url = new URL(req.url);
-    let pathname = url.pathname;
+    const pathname = url.pathname;
 
-    // 根路径返回 index.html
+    // 根路径 → index.html
     if (pathname === "/") {
-      const html = await getIndexHtml();
+      const html = await Bun.file(`./${OUTDIR}/index.html`).text();
       return new Response(html, {
         headers: { "Content-Type": "text/html; charset=utf-8" },
       });
     }
 
-    // SPA 路由 - 无扩展名的路径返回 index.html
-    if (!pathname.includes(".") && !pathname.startsWith("/.dist")) {
-      const html = await getIndexHtml();
-      return new Response(html, {
-        headers: { "Content-Type": "text/html; charset=utf-8" },
-      });
+    // 静态文件（带扩展名的路径）
+    if (pathname.includes(".")) {
+      const file = Bun.file(`./${OUTDIR}${pathname}`);
+      if (await file.exists()) {
+        const ext = pathname.substring(pathname.lastIndexOf("."));
+        return new Response(file, {
+          headers: {
+            "Content-Type": contentTypes[ext] || "application/octet-stream",
+            "Cache-Control": "public, max-age=31536000, immutable",
+          },
+        });
+      }
     }
 
-    // 从 .dist 目录提供打包后的文件
-    const distFile = Bun.file(`.${pathname}`);
-    if (await distFile.exists()) {
-      const ext = pathname.substring(pathname.lastIndexOf("."));
-      return new Response(distFile, {
-        headers: {
-          "Content-Type": contentTypes[ext] || "application/octet-stream",
-          "Cache-Control": "no-cache",
-        },
-      });
-    }
-
-    // 404
-    return new Response("Not Found", { status: 404 });
+    // SPA 路由 → 返回 index.html（React Router 处理）
+    const html = await Bun.file(`./${OUTDIR}/index.html`).text();
+    return new Response(html, {
+      headers: { "Content-Type": "text/html; charset=utf-8" },
+    });
   },
 });
 
-console.log(`🚀 React Native Paper 中文文档已启动`);
-console.log(`📍 地址: http://localhost:${server.port}`);
+if (isDev) {
+  console.log("🚀 React Native Paper 中文文档已启动");
+  console.log("📍 地址: http://localhost:3000");
+}
