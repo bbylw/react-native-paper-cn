@@ -52,6 +52,17 @@ async function buildApp() {
   }
   await Bun.write(`${OUTDIR}/index.html`, html);
 
+  // 复制 public/ 静态资源
+  try {
+    const publicFiles = await Array.fromAsync(
+      new Bun.Glob("*").scan({ cwd: "public", absolute: false })
+    );
+    for (const file of publicFiles) {
+      const content = await Bun.file(`public/${file}`).text();
+      await Bun.write(`${OUTDIR}/${file}`, content);
+    }
+  } catch {}
+
   console.log(
     `Build: ${jsName}${cssName ? ", " + cssName : ""}, index.html`
   );

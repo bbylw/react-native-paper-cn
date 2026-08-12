@@ -72,6 +72,16 @@ if (cssName) {
 
 // 写入 dist/index.html
 await Bun.write(`${OUTDIR}/index.html`, html);
-
 console.log(`HTML: index.html`);
+
+// 复制 public/ 目录下的静态资源到 dist/
+const publicDir = await Array.fromAsync(
+  new Bun.Glob("*").scan({ cwd: "public", absolute: false })
+);
+for (const file of publicDir) {
+  const content = await Bun.file(`public/${file}`).text();
+  await Bun.write(`${OUTDIR}/${file}`, content);
+  console.log(`Asset: ${file}`);
+}
+
 console.log(`Done -> ${OUTDIR}/`);
